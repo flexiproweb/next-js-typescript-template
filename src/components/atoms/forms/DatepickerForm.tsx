@@ -44,7 +44,7 @@ export default function DatepickerForm({
         onChange={onChange}
         min={min}
         max={max}
-        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all backdrop-blur-sm font-tertiary text-sm ${
+        className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all backdrop-blur-sm text-sm outline-none ${
           error ? 'border-red-500 dark:border-red-400' : ''
         }`}
       />

@@ -44,7 +44,7 @@ export default function TextAreaForm({
         placeholder={placeholder}
         required={required}
         rows={rows}
-        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all backdrop-blur-sm font-tertiary text-sm resize-vertical ${
+        className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all backdrop-blur-sm text-sm resize-vertical outline-none ${
           error ? 'border-red-500 dark:border-red-400' : ''
         }`}
       />

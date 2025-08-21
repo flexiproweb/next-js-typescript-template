@@ -24,7 +24,7 @@ export default function SearchBar({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all backdrop-blur-sm font-tertiary min-w-[280px]"
+        className="px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all backdrop-blur-sm font-tertiary min-w-[280px] outline-none"
       />
     </div>
   );
