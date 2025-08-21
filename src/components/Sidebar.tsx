@@ -19,9 +19,9 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
     { name: "Dashboard", href: "/", icon: HomeIcon },
-    { 
-        name: "Users", 
-        href: "/users", 
+    {
+        name: "Users",
+        href: "/users",
         icon: UsersIcon,
         hasSubmenu: true,
         subItems: [
@@ -118,15 +118,13 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                         <div key={item.name}>
                             {/* Main Menu Item */}
                             <div
-                                className={`group relative flex items-center transition-all duration-200 ${
-                                    isDesktop && isCollapsed
+                                className={`group relative flex items-center transition-all duration-200 ${isDesktop && isCollapsed
                                         ? "px-3 py-3 mx-1 justify-center rounded-lg"
                                         : "px-3 py-3 rounded-lg"
-                                } ${
-                                    isActive
+                                    } ${isActive
                                         ? "bg-gradient-to-r from-primary-600 to-secondary-500 text-white shadow-lg"
                                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                }`}
+                                    }`}
                             >
                                 {item.hasSubmenu && (!isDesktop || !isCollapsed) ? (
                                     // Submenu toggle button
@@ -136,13 +134,11 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                                     >
                                         <div className="flex items-center">
                                             <item.icon
-                                                className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                                                    isDesktop && isCollapsed ? "" : "mr-3"
-                                                } ${
-                                                    isActive 
-                                                        ? "text-white" 
+                                                className={`h-5 w-5 flex-shrink-0 transition-colors ${isDesktop && isCollapsed ? "" : "mr-3"
+                                                    } ${isActive
+                                                        ? "text-white"
                                                         : "text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-                                                }`}
+                                                    }`}
                                             />
 
                                             {(!isDesktop || !isCollapsed) && (
@@ -167,13 +163,11 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                                         className="w-full flex items-center"
                                     >
                                         <item.icon
-                                            className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                                                isDesktop && isCollapsed ? "" : "mr-3"
-                                            } ${
-                                                isActive 
-                                                    ? "text-white" 
+                                            className={`h-5 w-5 flex-shrink-0 transition-colors ${isDesktop && isCollapsed ? "" : "mr-3"
+                                                } ${isActive
+                                                    ? "text-white"
                                                     : "text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-                                            }`}
+                                                }`}
                                         />
 
                                         {(!isDesktop || !isCollapsed) && (
@@ -203,11 +197,10 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                                                 key={subItem.name}
                                                 href={subItem.href}
                                                 onClick={() => onClose()}
-                                                className={`block px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-                                                    isSubActive
+                                                className={`block px-3 py-2 text-sm rounded-lg transition-all duration-200 ${isSubActive
                                                         ? "bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
                                                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-300"
-                                                }`}
+                                                    }`}
                                             >
                                                 {subItem.name}
                                             </Link>
@@ -259,10 +252,10 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                             leaveTo="-translate-x-full"
                         >
                             <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
-                                <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                                    <button 
-                                        type="button" 
-                                        className="-m-2.5 p-2.5 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors" 
+                                <div className="absolute top-0 right-0 flex justify-center pt-5 pr-5">
+                                    <button
+                                        type="button"
+                                        className="-m-2.5 p-2.5 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
                                         onClick={onClose}
                                     >
                                         <span className="sr-only">Close sidebar</span>
@@ -277,6 +270,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                     </div>
                 </Dialog>
             </Transition.Root>
+
 
             {/* Desktop sidebar */}
             <div className={`hidden lg:flex lg:flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-lg ${className}`}>
