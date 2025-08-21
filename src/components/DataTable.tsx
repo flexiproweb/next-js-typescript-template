@@ -147,7 +147,7 @@ export default function DataTable() {
                     <thead className="bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-700/50">
                         <tr>
                             <th
-                                className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
+                                className="px-7 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
                                 onClick={() => handleSort("name")}
                             >
                                 <div className="flex items-center space-x-2">
@@ -194,18 +194,8 @@ export default function DataTable() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3, delay: index * 0.1 }}
                                 className="hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200"
-                                whileHover={{
-                                    scale: 1.005,
-                                    y: -1,
-                                    zIndex: 1
-                                }}
-                                style={{ transformOrigin: 'center center' }}
                             >
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap"
-                                    whileHover={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                <td className="px-8 py-6 whitespace-nowrap">
                                     <div className="flex items-center">
                                         <div className="ml-6">
                                             <div className="text-sm font-semibold text-gray-900 dark:text-white font-tertiary mb-1">
@@ -216,44 +206,24 @@ export default function DataTable() {
                                             </div>
                                         </div>
                                     </div>
-                                </motion.td>
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap"
-                                    whileHover={{ scale: 1.02 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap">
                                     <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getRoleColor(employee.role)}`}>
                                         {employee.role}
                                     </span>
-                                </motion.td>
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300"
-                                    whileHover={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
                                     {employee.location}
-                                </motion.td>
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap"
-                                    whileHover={{ scale: 1.02 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap">
                                     <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}>
                                         {employee.status}
                                     </span>
-                                </motion.td>
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300"
-                                    whileHover={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
                                     {new Date(employee.joinDate).toLocaleDateString()}
-                                </motion.td>
-                                <motion.td
-                                    className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium"
-                                    whileHover={{ scale: 1.02 }}
-                                    transition={{ duration: 0.2 }}
-                                >
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end space-x-3">
                                         <motion.button
                                             className="text-primary-600 hover:text-primary-500 dark:text-primary-400 p-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
@@ -277,7 +247,7 @@ export default function DataTable() {
                                             <TrashIcon className="w-6 h-6" />
                                         </motion.button>
                                     </div>
-                                </motion.td>
+                                </td>
                             </motion.tr>
                         ))}
                     </tbody>

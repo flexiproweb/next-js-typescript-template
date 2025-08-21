@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bars3Icon, BellIcon, MagnifyingGlassIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, BellIcon, MagnifyingGlassIcon, MoonIcon, SunIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "./ClientThemeProvider";
-// import Image from "next/image";
 
 interface SafeHeaderProps {
     onMenuClick: () => void;
     isCollapsed?: boolean;
-    className?: string; // Add className prop
+    className?: string;
 }
 
 export default function SafeHeader({
@@ -18,12 +17,12 @@ export default function SafeHeader({
 }: SafeHeaderProps) {
     const { theme, toggleTheme, mounted } = useTheme();
     const [searchQuery, setSearchQuery] = useState("");
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
 
     if (!mounted) {
         return (
             <header className={`bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 w-full ${className}`}>
                 <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 h-[73px]">
-                    {/* Loading state content */}
                     <div className="flex items-center space-x-4">
                         <button
                             onClick={onMenuClick}
@@ -33,14 +32,7 @@ export default function SafeHeader({
                         </button>
 
                         <div className="flex items-center lg:hidden md:hidden sm:hidden">
-                            {/* <Image
-                src="https://www.intellinum.com/wp-content/uploads/2024/07/Intellinum.png"
-                alt="Intellinum Logo"
-                width={120}
-                height={30}
-                className="h-8 w-auto"
-                priority
-              /> */}
+                            {/* Logo placeholder */}
                         </div>
                     </div>
 
@@ -92,17 +84,11 @@ export default function SafeHeader({
                     </button>
 
                     <div className="flex items-center lg:hidden">
-                        {/* <Image
-              src="https://www.intellinum.com/wp-content/uploads/2024/07/Intellinum.png"
-              alt="Intellinum Logo"
-              width={120}
-              height={30}
-              className="h-8 w-auto"
-              priority
-            /> */}
+                        {/* Logo placeholder */}
                     </div>
                 </div>
 
+                {/* Desktop Search */}
                 <div className="hidden md:flex flex-1 max-w-lg mx-4">
                     <div className="relative w-full">
                         <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -116,11 +102,38 @@ export default function SafeHeader({
                     </div>
                 </div>
 
-
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        <MagnifyingGlassIcon className="w-5 h-5" />
-                    </button>
+                    {/* Mobile Search Toggle */}
+                    <div className="md:hidden relative flex items-center">
+                        {showMobileSearch ? (
+                            <div className="flex items-center w-full">
+                                <button
+                                    onClick={() => setShowMobileSearch(false)}
+                                    className="p-2 mr-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <XMarkIcon className="w-5 h-5" />
+                                </button>
+                                <div className="relative flex-grow">
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 text-sm outline-none"
+                                        autoFocus
+                                    />
+                                     <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowMobileSearch(true)}
+                                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                <MagnifyingGlassIcon className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
 
                     <button
                         onClick={toggleTheme}
