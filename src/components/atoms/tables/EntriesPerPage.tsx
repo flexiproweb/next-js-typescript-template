@@ -22,13 +22,19 @@ export default function EntriesPerPage({
   className = ""
 }: EntriesPerPageProps) {
   
-  // Detect dark mode
+  // Detect dark mode and client-side mounting
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // Mark component as mounted (client-side)
+    setIsMounted(true);
+    
     // Check if dark mode is active
     const checkDarkMode = () => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
+      if (typeof window !== 'undefined') {
+        setIsDarkMode(document.documentElement.classList.contains('dark'));
+      }
     };
 
     // Initial check
@@ -36,10 +42,12 @@ export default function EntriesPerPage({
 
     // Create observer to watch for theme changes
     const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
+    if (typeof window !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
 
     return () => observer.disconnect();
   }, []);
@@ -70,10 +78,10 @@ export default function EntriesPerPage({
       borderRadius: '8px',
       backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : 'white',
       backdropFilter: isDarkMode ? 'blur(4px)' : 'none',
-      boxShadow: 'none', // Removed focus shadow
-      outline: 'none', // Removed outline
+      boxShadow: 'none',
+      outline: 'none',
       '&:hover': {
-        borderColor: isDarkMode ? '#4b5563' : '#d1d5db', // No border change on hover
+        borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
       },
       fontSize: '14px',
       fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
@@ -101,7 +109,7 @@ export default function EntriesPerPage({
       ...provided,
       color: isDarkMode ? '#9ca3af' : '#6b7280',
       '&:hover': {
-        color: isDarkMode ? '#9ca3af' : '#6b7280' // No color change on hover
+        color: isDarkMode ? '#9ca3af' : '#6b7280'
       }
     }),
     placeholder: (provided: any) => ({
@@ -157,6 +165,11 @@ export default function EntriesPerPage({
     })
   });
 
+  // Don't render until component is mounted on client
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <div className={className}>
       <Select
@@ -167,13 +180,13 @@ export default function EntriesPerPage({
         styles={getCustomStyles()}
         className="react-select-container min-w-[140px]"
         classNamePrefix="react-select"
-        menuPortalTarget={document.body}
+        menuPortalTarget={typeof window !== 'undefined' ? document.body : undefined}
         menuPosition="fixed"
         theme={(theme) => ({
           ...theme,
           colors: {
             ...theme.colors,
-            primary: isDarkMode ? '#4b5563' : '#d1d5db', // Changed primary to match border
+            primary: isDarkMode ? '#4b5563' : '#d1d5db',
             primary75: isDarkMode ? '#4b5563' : '#d1d5db',
             primary50: isDarkMode ? '#4b5563' : '#d1d5db',
             primary25: isDarkMode ? '#4b5563' : '#d1d5db',

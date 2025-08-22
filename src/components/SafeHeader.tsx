@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Bars3Icon, BellIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
 import { useTheme } from "./ClientThemeProvider";
-import SearchHeader from "./atoms/header/SearchHeader";
+import {SearchHeader} from "./atoms/header/SearchHeader";
 
 interface SafeHeaderProps {
     onMenuClick: () => void;

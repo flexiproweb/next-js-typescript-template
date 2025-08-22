@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircleIcon, ExclamationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import InputForm from "./atoms/forms/InputForm";
-import SelectForm from "./atoms/forms/SelectForm";
+import {SelectForm} from "./atoms/forms/SelectForm";
 import DatepickerForm from "./atoms/forms/DatepickerForm";
 import InputFileForm from "./atoms/forms/InputFileForm";
 import InputArea from "./atoms/forms/TextAreaForm";
