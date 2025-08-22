@@ -49,7 +49,10 @@ export function SearchableDropdown({
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [autocompleteText, setAutocompleteText] = useState("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [textWidth, setTextWidth] = useState(0);
   const lastValueRef = useRef(value);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
   const isSelectMode = mode === 'select';
   const isSearchMode = mode === 'search';
@@ -72,6 +75,34 @@ export function SearchableDropdown({
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // Create a hidden canvas for precise text measurement
+  useEffect(() => {
+    if (!canvasRef.current) {
+      canvasRef.current = document.createElement('canvas');
+    }
+  }, []);
+
+  // Measure text width precisely
+  const measureText = useCallback((text: string) => {
+    if (!canvasRef.current || !text) return 0;
+    
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    if (!context) return 0;
+
+    // Match the input's font exactly
+    const inputElement = dropdown.inputRef.current;
+    if (inputElement) {
+      const styles = window.getComputedStyle(inputElement);
+      context.font = `${styles.fontSize} ${styles.fontFamily}`;
+    } else {
+      // Fallback font
+      context.font = '14px ui-sans-serif, system-ui, sans-serif';
+    }
+
+    return context.measureText(text).width;
   }, []);
 
   // Filter function for dropdown options
@@ -107,6 +138,45 @@ export function SearchableDropdown({
     isDisabled: disabled
   });
 
+  // Update cursor position and text width
+  const updateCursorPosition = useCallback(() => {
+    const inputElement = dropdown.inputRef.current;
+    if (!inputElement) return;
+
+    const cursorPos = inputElement.selectionStart || 0;
+    const textBeforeCursor = dropdown.inputValue.substring(0, cursorPos);
+    const width = measureText(textBeforeCursor);
+    
+    setCursorPosition(cursorPos);
+    setTextWidth(width);
+  }, [dropdown.inputRef, dropdown.inputValue, measureText]);
+
+  // Set up cursor position tracking
+  useEffect(() => {
+    const inputElement = dropdown.inputRef.current;
+    if (!inputElement) return;
+
+    // Update on input change
+    updateCursorPosition();
+
+    // Update on cursor movement
+    const handleSelectionChange = () => {
+      setTimeout(updateCursorPosition, 0);
+    };
+
+    inputElement.addEventListener('keyup', handleSelectionChange);
+    inputElement.addEventListener('mouseup', handleSelectionChange);
+    inputElement.addEventListener('focus', handleSelectionChange);
+    inputElement.addEventListener('input', handleSelectionChange);
+
+    return () => {
+      inputElement.removeEventListener('keyup', handleSelectionChange);
+      inputElement.removeEventListener('mouseup', handleSelectionChange);
+      inputElement.removeEventListener('focus', handleSelectionChange);
+      inputElement.removeEventListener('input', handleSelectionChange);
+    };
+  }, [updateCursorPosition]);
+
   // Initialize component
   useEffect(() => {
     if (!isInitialized) {
@@ -135,16 +205,21 @@ export function SearchableDropdown({
   // Handle input changes
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    
     dropdown.setInputValue(newValue);
     
     if (isSearchMode) {
       onChange?.(newValue);
+    }
+    
+    // Handle autocomplete for both modes
+    if (enableAutocomplete) {
+      setAutocompleteText("");
       
-      // Handle autocomplete for search mode
-      if (enableAutocomplete) {
-        setAutocompleteText("");
-        
-        if (newValue.trim()) {
+      if (newValue.trim()) {
+        // Only show autocomplete if cursor is at the end of input
+        if (cursorPos === newValue.length) {
           const firstMatch = options.find(item => 
             item.label.toLowerCase().startsWith(newValue.toLowerCase()) &&
             item.label.toLowerCase() !== newValue.toLowerCase()
@@ -153,42 +228,21 @@ export function SearchableDropdown({
           if (firstMatch && newValue.length > 0) {
             setTimeout(() => {
               const currentInput = dropdown.inputRef.current;
-              if (currentInput && currentInput.value === newValue && newValue.trim()) {
+              if (currentInput && 
+                  currentInput.value === newValue && 
+                  newValue.trim() &&
+                  (currentInput.selectionStart || 0) === newValue.length) {
                 const stillMatches = firstMatch.label.toLowerCase().startsWith(newValue.toLowerCase());
                 if (stillMatches) {
                   setAutocompleteText(firstMatch.label);
                 }
               }
-            }, 100);
-          }
-        }
-      }
-    } else if (isSelectMode) {
-      // Handle autocomplete for select mode
-      if (enableAutocomplete) {
-        setAutocompleteText("");
-        
-        if (newValue.trim()) {
-          const firstMatch = options.find(item => 
-            item.label.toLowerCase().startsWith(newValue.toLowerCase()) &&
-            item.label.toLowerCase() !== newValue.toLowerCase()
-          );
-          
-          if (firstMatch && newValue.length > 0) {
-            setTimeout(() => {
-              const currentInput = dropdown.inputRef.current;
-              if (currentInput && currentInput.value === newValue && newValue.trim()) {
-                const stillMatches = firstMatch.label.toLowerCase().startsWith(newValue.toLowerCase());
-                if (stillMatches) {
-                  setAutocompleteText(firstMatch.label);
-                }
-              }
-            }, 100);
+            }, 50);
           }
         }
       }
     }
-  }, [dropdown, isSearchMode, isSelectMode, enableAutocomplete, options, onChange]);
+  }, [dropdown, isSearchMode, enableAutocomplete, options, onChange]);
 
   // Accept autocomplete suggestion
   const acceptAutocomplete = useCallback(() => {
@@ -230,20 +284,22 @@ export function SearchableDropdown({
       return;
     }
     
-    // Handle autocomplete for both search and select modes
-    if (enableAutocomplete) {
-      if (e.key === 'Tab' && autocompleteText && autocompleteText.toLowerCase().startsWith(dropdown.inputValue.toLowerCase())) {
+    // Enhanced autocomplete handling
+    if (enableAutocomplete && autocompleteText) {
+      const inputElement = e.target as HTMLInputElement;
+      const cursorPos = inputElement.selectionStart || 0;
+      const isAtEnd = cursorPos === dropdown.inputValue.length;
+      
+      if ((e.key === 'Tab' || (e.key === 'ArrowRight' && isAtEnd)) && 
+          autocompleteText.toLowerCase().startsWith(dropdown.inputValue.toLowerCase())) {
         e.preventDefault();
         acceptAutocomplete();
         return;
-      } else if (e.key === 'ArrowRight' && autocompleteText && autocompleteText.toLowerCase().startsWith(dropdown.inputValue.toLowerCase())) {
-        const input = e.target as HTMLInputElement;
-        const cursorPosition = input.selectionStart || 0;
-        if (cursorPosition === dropdown.inputValue.length) {
-          e.preventDefault();
-          acceptAutocomplete();
-          return;
-        }
+      }
+      
+      // Clear autocomplete on cursor movement keys
+      if (['ArrowLeft', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+        setAutocompleteText("");
       }
     }
     
@@ -284,10 +340,21 @@ export function SearchableDropdown({
   // Handle input click
   const handleInputClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Clear autocomplete when clicking to change cursor position
+    setTimeout(() => {
+      const inputElement = dropdown.inputRef.current;
+      if (inputElement) {
+        const cursorPos = inputElement.selectionStart || 0;
+        if (cursorPos !== dropdown.inputValue.length) {
+          setAutocompleteText("");
+        }
+      }
+    }, 0);
+    
     if (!disabled && !dropdown.isOpen) {
       dropdown.open();
     }
-    setAutocompleteText("");
   }, [disabled, dropdown]);
 
   // Handle clear button
@@ -437,29 +504,45 @@ export function SearchableDropdown({
     );
   }, [isSearchMode, dropdown.inputValue, onSearch, dropdown]);
 
-  // Autocomplete display component
+  // Autocomplete display component with Google-like positioning
   const AutocompleteDisplay = () => {
     if (!enableAutocomplete ||
         !autocompleteText || 
         !dropdown.inputValue || 
         !autocompleteText.toLowerCase().startsWith(dropdown.inputValue.toLowerCase()) ||
-        autocompleteText.toLowerCase() === dropdown.inputValue.toLowerCase()) {
+        autocompleteText.toLowerCase() === dropdown.inputValue.toLowerCase() ||
+        cursorPosition !== dropdown.inputValue.length) {
       return null;
     }
     
     const remainingText = autocompleteText.slice(dropdown.inputValue.length);
     
+    // Calculate precise positioning
+    const leftOffset = isSearchMode ? 40 : 16; // Account for search icon
+    const topOffset = isSelectMode ? 8 : 8; // Vertical centering
+    
     return (
       <div 
-        className={`absolute top-0 left-0 w-full ${isSearchMode ? 'pl-10' : 'pl-4'} pr-10 py-2 pointer-events-none select-none z-10`}
+        className="absolute pointer-events-none select-none z-10"
         style={{ 
+          left: `${leftOffset + textWidth}px`,
+          top: `${topOffset}px`,
           fontSize: '14px',
-          lineHeight: isSelectMode ? '35px' : '20px',
-          fontFamily: 'inherit'
+          lineHeight: '20px',
+          fontFamily: 'inherit',
+          height: '20px',
+          display: 'flex',
+          alignItems: 'center'
         }}
       >
-        <span className="invisible font-tertiary">{dropdown.inputValue}</span>
-        <span className="bg-blue-200 dark:bg-blue-600 text-gray-900 dark:text-white font-tertiary rounded-sm px-0.5">
+        <span 
+          className="bg-blue-200 dark:bg-blue-800/60 text-blue-800 dark:text-blue-200 rounded-sm px-0.5"
+          style={{
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            fontWeight: 'normal'
+          }}
+        >
           {remainingText}
         </span>
       </div>
