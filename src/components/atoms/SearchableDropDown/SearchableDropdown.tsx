@@ -10,6 +10,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useDropdown } from './useDropdown';
 import DropdownMenu from './DropdownMenu';
+import { debounce } from '../../../utils/debounce';
+import { searchProducts, searchUsers, searchPosts, searchAll } from '../../../services/apiService';
 import type { SearchableDropdownProps, SearchableDropdownOption } from './SearchableDropdown.types';
 
 export function SearchableDropdown({
@@ -38,6 +40,11 @@ export function SearchableDropdown({
   enableAutocomplete = true,
   maxSuggestions = 15,
   
+  // API specific
+  apiSearchType = 'products', // 'products', 'users', 'posts', 'all'
+  enableApiSearch = true,
+  debounceDelay = 300,
+  
   // Styling
   maxHeight = 300,
   showCategoryIcons = true,
@@ -51,8 +58,12 @@ export function SearchableDropdown({
   const [isInitialized, setIsInitialized] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [textWidth, setTextWidth] = useState(0);
+  const [apiOptions, setApiOptions] = useState<SearchableDropdownOption[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const lastValueRef = useRef(value);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
   const isSelectMode = mode === 'select';
   const isSearchMode = mode === 'search';
@@ -60,6 +71,70 @@ export function SearchableDropdown({
   // Find selected option for select mode
   const selectedOption = isSelectMode && value ? 
     options.find(option => option.value === value) : null;
+
+  // Get API search function based on type
+  const getApiSearchFunction = useCallback(() => {
+    switch (apiSearchType) {
+      case 'products': return searchProducts;
+      case 'users': return searchUsers;
+      case 'posts': return searchPosts;
+      case 'all': return searchAll;
+      default: return searchProducts;
+    }
+  }, [apiSearchType]);
+
+  // API search function with debouncing
+  const debouncedApiSearch = useMemo(
+    () => debounce(async (query: string) => {
+      if (!query.trim() || !enableApiSearch || !isSearchMode) {
+        setApiOptions([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Create new abort controller
+      abortControllerRef.current = new AbortController();
+
+      try {
+        setIsLoading(true);
+        setApiError(null);
+        
+        const searchFunction = getApiSearchFunction();
+        const results = await searchFunction(query);
+        
+        // Check if request was aborted
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
+        
+        setApiOptions(results);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('API search error:', err);
+          setApiError('Failed to fetch search results');
+          setApiOptions([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }, debounceDelay),
+    [enableApiSearch, isSearchMode, getApiSearchFunction, debounceDelay]
+  );
+
+  // Combine static options with API options
+  const combinedOptions = useMemo(() => {
+    if (!isSearchMode || !enableApiSearch) {
+      return options;
+    }
+    
+    // For search mode, prioritize API results
+    return [...apiOptions, ...options];
+  }, [options, apiOptions, isSearchMode, enableApiSearch]);
 
   // Dark mode detection
   useEffect(() => {
@@ -75,6 +150,15 @@ export function SearchableDropdown({
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   // Create a hidden canvas for precise text measurement
@@ -123,7 +207,7 @@ export function SearchableDropdown({
 
   // Dropdown hook
   const dropdown = useDropdown({
-    items: options,
+    items: combinedOptions,
     filterFn: filterFunction,
     onSelect: (option) => {
       const newValue = option.value;
@@ -211,6 +295,11 @@ export function SearchableDropdown({
     
     if (isSearchMode) {
       onChange?.(newValue);
+      
+      // Trigger API search with debouncing
+      if (enableApiSearch) {
+        debouncedApiSearch(newValue);
+      }
     }
     
     // Handle autocomplete for both modes
@@ -220,7 +309,7 @@ export function SearchableDropdown({
       if (newValue.trim()) {
         // Only show autocomplete if cursor is at the end of input
         if (cursorPos === newValue.length) {
-          const firstMatch = options.find(item => 
+          const firstMatch = combinedOptions.find(item => 
             item.label.toLowerCase().startsWith(newValue.toLowerCase()) &&
             item.label.toLowerCase() !== newValue.toLowerCase()
           );
@@ -242,12 +331,12 @@ export function SearchableDropdown({
         }
       }
     }
-  }, [dropdown, isSearchMode, enableAutocomplete, options, onChange]);
+  }, [dropdown, isSearchMode, enableAutocomplete, combinedOptions, onChange, enableApiSearch, debouncedApiSearch]);
 
   // Accept autocomplete suggestion
   const acceptAutocomplete = useCallback(() => {
     if (autocompleteText && autocompleteText.toLowerCase().startsWith(dropdown.inputValue.toLowerCase())) {
-      const matchingOption = options.find(option => 
+      const matchingOption = combinedOptions.find(option => 
         option.label.toLowerCase() === autocompleteText.toLowerCase()
       );
       
@@ -266,7 +355,7 @@ export function SearchableDropdown({
       setAutocompleteText("");
       dropdown.close();
     }
-  }, [autocompleteText, dropdown, onChange, options, isSelectMode]);
+  }, [autocompleteText, dropdown, onChange, combinedOptions, isSelectMode]);
 
   // Handle key presses
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -366,6 +455,8 @@ export function SearchableDropdown({
     dropdown.close();
     onChange?.('');
     setAutocompleteText("");
+    setApiOptions([]);
+    setApiError(null);
   }, [dropdown, onChange]);
 
   // Handle dropdown toggle (for select mode)
@@ -386,9 +477,10 @@ export function SearchableDropdown({
     }
   }, [dropdown, disabled, isSelectMode, selectedOption]);
 
-  // Get category icon
+  // Get category icon - Only show icons for select mode
   const getCategoryIcon = useCallback((category?: string) => {
-    if (!showCategoryIcons || !category) return isSearchMode ? '🔍' : '';
+    // Remove icons for search mode
+    if (isSearchMode || !showCategoryIcons || !category) return '';
     
     switch (category) {
       case 'Electronics': return '📱';
@@ -396,93 +488,161 @@ export function SearchableDropdown({
       case 'Photography': return '📷';
       case 'Gaming': return '🎮';
       case 'Automotive': return '🚗';
+      case 'Users': return '👤';
+      case 'Posts': return '📝';
       case 'Help': return '❓';
       case 'Support': return '💬';
       case 'Account': return '⚙️';
-      default: return '🔍';
+      default: return '';
     }
   }, [showCategoryIcons, isSearchMode]);
 
-  // Render dropdown item
+  // Render dropdown item - Unified styling for both modes
   const renderDropdownItem = useCallback((option: SearchableDropdownOption, index: number, isHighlighted: boolean) => {
     const isSelected = isSelectMode && option.value === value;
     
-    if (isSelectMode) {
-      // Select mode styling
+    return (
+      <div
+        style={{
+          backgroundColor: isSelected
+            ? '#3b82f6'
+            : isHighlighted
+              ? (isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f3f4f6')
+              : 'transparent',
+          color: isSelected
+            ? 'white'
+            : isDarkMode 
+              ? '#f9fafb' 
+              : '#111827',
+          fontSize: '14px',
+          fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+          borderRadius: '6px',
+          margin: '2px 0',
+          padding: isSearchMode ? '12px 16px' : '8px 12px',
+          cursor: 'pointer',
+          transition: 'background-color 0.15s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          {/* Category icon - only for select mode */}
+          {isSelectMode && getCategoryIcon(option.category) && (
+            <span style={{ fontSize: '16px', marginRight: '8px' }}>
+              {getCategoryIcon(option.category)}
+            </span>
+          )}
+          
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontWeight: '500' }}>
+                {option.label}
+              </span>
+              
+              {/* Type badge - only for search mode */}
+              {isSearchMode && option.type && (
+                <span style={{
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  borderRadius: '12px',
+                  fontWeight: '500',
+                  backgroundColor: option.type === 'product' 
+                    ? (isDarkMode ? 'rgba(34, 197, 94, 0.3)' : '#dcfce7')
+                    : option.type === 'user' 
+                    ? (isDarkMode ? 'rgba(59, 130, 246, 0.3)' : '#dbeafe')
+                    : option.type === 'post' 
+                    ? (isDarkMode ? 'rgba(168, 85, 247, 0.3)' : '#f3e8ff')
+                    : (isDarkMode ? 'rgba(107, 114, 128, 0.3)' : '#f3f4f6'),
+                  color: option.type === 'product' 
+                    ? (isDarkMode ? '#86efac' : '#166534')
+                    : option.type === 'user' 
+                    ? (isDarkMode ? '#93c5fd' : '#1d4ed8')
+                    : option.type === 'post' 
+                    ? (isDarkMode ? '#c4b5fd' : '#7c3aed')
+                    : (isDarkMode ? '#d1d5db' : '#374151')
+                }}>
+                  {option.type}
+                </span>
+              )}
+            </div>
+            
+            {/* Category text - only for search mode */}
+            {isSearchMode && option.category && (
+              <div style={{ 
+                fontSize: '12px', 
+                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                marginTop: '4px'
+              }}>
+                in {option.category}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Right arrow - only for search mode */}
+        {isSearchMode && (
+          <ChevronRightIcon style={{ 
+            width: '16px', 
+            height: '16px', 
+            color: isDarkMode ? '#6b7280' : '#9ca3af',
+            marginLeft: '8px',
+            flexShrink: 0
+          }} />
+        )}
+      </div>
+    );
+  }, [isSelectMode, isSearchMode, value, isDarkMode, getCategoryIcon]);
+
+  // Render no items message
+  const renderNoItems = useCallback(() => {
+    if (isLoading) {
       return (
         <div
           style={{
-            backgroundColor: isSelected
-              ? '#3b82f6'
-              : isHighlighted
-                ? (isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f3f4f6')
-                : 'transparent',
-            color: isSelected
-              ? 'white'
-              : isDarkMode 
-                ? '#f9fafb' 
-                : '#111827',
+            padding: '8px 12px',
+            color: isDarkMode ? '#9ca3af' : '#6b7280',
             fontSize: '14px',
             fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-            borderRadius: '6px',
-            margin: '2px 0',
-            padding: '8px 12px'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          {option.label}
-        </div>
-      );
-    } else {
-      // Search mode styling
-      return (
-        <div
-          className={`flex items-center justify-between px-6 py-4 cursor-pointer transition-all duration-150 ${
-            isHighlighted 
-              ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary-500' 
-              : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-        >
-          <div className="flex items-center flex-1">
-            {showCategoryIcons && (
-              <span className="text-xl mr-4">{getCategoryIcon(option.category)}</span>
-            )}
-            <div className="flex-1">
-              <div className="flex items-center">
-                <p className="text-base font-medium text-gray-900 dark:text-white font-tertiary">
-                  {option.label}
-                </p>
-                {option.type === 'query' && (
-                  <span className="ml-3 px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full font-medium">
-                    Help
-                  </span>
-                )}
-              </div>
-              {option.category && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-tertiary">
-                  in {option.category}
-                </p>
-              )}
-            </div>
-          </div>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+          Searching...
         </div>
       );
     }
-  }, [isSelectMode, value, isDarkMode, showCategoryIcons, getCategoryIcon]);
-
-  // Render no items message
-  const renderNoItems = useCallback(() => (
-    <div
-      style={{
-        padding: '8px 12px',
-        color: isDarkMode ? '#9ca3af' : '#6b7280',
-        fontSize: '14px',
-        fontFamily: 'ui-sans-serif, system-ui, sans-serif'
-      }}
-    >
-      {isSelectMode ? 'No options found' : 'No suggestions found'}
-    </div>
-  ), [isDarkMode, isSelectMode]);
+    
+    if (apiError) {
+      return (
+        <div
+          style={{
+            padding: '8px 12px',
+            color: '#ef4444',
+            fontSize: '14px',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+          }}
+        >
+          {apiError}
+        </div>
+      );
+    }
+    
+    return (
+      <div
+        style={{
+          padding: '8px 12px',
+          color: isDarkMode ? '#9ca3af' : '#6b7280',
+          fontSize: '14px',
+          fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+        }}
+      >
+        {isSelectMode ? 'No options found' : 'No suggestions found'}
+      </div>
+    );
+  }, [isDarkMode, isSelectMode, isLoading, apiError]);
 
   // Render search footer (for search mode only)
   const renderFooter = useCallback(() => {
@@ -595,7 +755,11 @@ export function SearchableDropdown({
           {/* Left icon */}
           {isSearchMode && (
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-20">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+              ) : (
+                <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+              )}
             </div>
           )}
 

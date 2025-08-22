@@ -3,7 +3,7 @@ export interface SearchableDropdownOption {
   value: string;
   label: string;
   category?: string;
-  type?: 'product' | 'query' | 'option';
+  type?: 'product' | 'user' | 'post' | 'query' | 'option';
   icon?: string;
 }
 
@@ -14,7 +14,9 @@ export interface SearchableDropdownProps {
   value?: string;
   onChange?: (value: string, option?: SearchableDropdownOption) => void;
   onSearch?: (query: string) => void;
-  
+  apiSearchType?: 'products' | 'users' | 'posts' | 'all';
+  enableApiSearch?: boolean;
+   debounceDelay?: number;
   // Styling & behavior
   placeholder?: string;
   className?: string;
