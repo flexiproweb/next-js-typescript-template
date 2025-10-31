@@ -137,163 +137,133 @@ export default function DataTable() {
                             onChange={setSearchTerm}
                             placeholder="Search team members..."
                         />
-                        <EntriesPerPage
-                            value={itemsPerPage}
-                            onChange={setItemsPerPage}
-                            options={[5, 10, 15, 20, 25, 30]} // Extended options up to 30
-                        />
                     </div>
                 </div>
             </div>
 
-            {/* Table with fixed container to prevent scrollbars on hover */}
-            <div className="overflow-x-auto custom-scrollbar relative">
-                <div className="overflow-hidden"> {/* Prevent hover scale from causing scrollbars */}
-                    <table className="w-full min-w-[900px]">
-                        <thead className="bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-700/50">
-                            <tr>
-                                <th
-                                    className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
-                                    onClick={() => handleSort("name")}
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <span>Name</span>
-                                        {sortField === "name" && (
-                                            <span className="text-primary-500 font-bold">
-                                                {sortDirection === "asc" ? "↑" : "↓"}
-                                            </span>
-                                        )}
-                                    </div>
-                                </th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    Role
-                                </th>
-                                <th
-                                    className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
-                                    onClick={() => handleSort("location")}
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <span>Location</span>
-                                        {sortField === "location" && (
-                                            <span className="text-primary-500 font-bold">
-                                                {sortDirection === "asc" ? "↑" : "↓"}
-                                            </span>
-                                        )}
-                                    </div>
-                                </th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    Join Date
-                                </th>
-                                <th className="px-8 py-5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200/30 dark:divide-gray-700/30">
-                            {currentData.map((employee, index) => (
-                                <motion.tr
-                                    key={employee.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200"
-                                    // Fixed: Reduced scale and added transform origin to prevent scrollbars
-                                    whileHover={{ 
-                                        scale: 1.005, // Much smaller scale to prevent overflow
-                                        y: -1, // Slight lift without causing overflow
-                                        zIndex: 1 
-                                    }}
-                                    style={{ transformOrigin: 'center center' }}
-                                >
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap"
-                                        whileHover={{ scale: 1.01 }} // Reduced from 1.02
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <div className="flex items-center">
-                                            <div className="ml-6">
-                                                <div className="text-sm font-semibold text-gray-900 dark:text-white font-tertiary mb-1">
-                                                    {employee.name}
-                                                </div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {employee.email}
-                                                </div>
+            {/* Table with horizontal scrolling enabled for small screens */}
+            <div className="overflow-x-auto custom-scrollbar w-full">
+                <table className="w-full min-w-[900px]">
+                    <thead className="bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-700/50">
+                        <tr>
+                            <th
+                                className="px-7 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
+                                onClick={() => handleSort("name")}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <span>Name</span>
+                                    {sortField === "name" && (
+                                        <span className="text-primary-500 font-bold">
+                                            {sortDirection === "asc" ? "↑" : "↓"}
+                                        </span>
+                                    )}
+                                </div>
+                            </th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                Role
+                            </th>
+                            <th
+                                className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-200/30 dark:hover:bg-gray-600/30 transition-colors"
+                                onClick={() => handleSort("location")}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <span>Location</span>
+                                    {sortField === "location" && (
+                                        <span className="text-primary-500 font-bold">
+                                            {sortDirection === "asc" ? "↑" : "↓"}
+                                        </span>
+                                    )}
+                                </div>
+                            </th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                Join Date
+                            </th>
+                            <th className="px-8 py-5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200/30 dark:divide-gray-700/30">
+                        {currentData.map((employee, index) => (
+                            <motion.tr
+                                key={employee.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3, delay: index * 0.1 }}
+                                className="hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200"
+                            >
+                                <td className="px-8 py-6 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                        <div className="ml-6">
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white font-tertiary mb-1">
+                                                {employee.name}
+                                            </div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                {employee.email}
                                             </div>
                                         </div>
-                                    </motion.td>
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap"
-                                        whileHover={{ scale: 1.02 }} // Reduced from 1.05
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getRoleColor(employee.role)}`}>
-                                            {employee.role}
-                                        </span>
-                                    </motion.td>
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300"
-                                        whileHover={{ scale: 1.01 }} // Reduced from 1.02
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        {employee.location}
-                                    </motion.td>
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap"
-                                        whileHover={{ scale: 1.02 }} // Reduced from 1.05
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}>
-                                            {employee.status}
-                                        </span>
-                                    </motion.td>
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300"
-                                        whileHover={{ scale: 1.01 }} // Reduced from 1.02
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        {new Date(employee.joinDate).toLocaleDateString()}
-                                    </motion.td>
-                                    <motion.td
-                                        className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium"
-                                        whileHover={{ scale: 1.02 }} // Reduced from 1.05
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <div className="flex justify-end space-x-3">
-                                            <motion.button
-                                                className="text-primary-600 hover:text-primary-500 dark:text-primary-400 p-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <EyeIcon className="w-6 h-6" />
-                                            </motion.button>
-                                            <motion.button
-                                                className="text-secondary-600 hover:text-secondary-500 dark:text-secondary-400 p-2 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded-lg transition-colors"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <PencilIcon className="w-6 h-6" />
-                                            </motion.button>
-                                            <motion.button
-                                                className="text-tertiary-600 hover:text-tertiary-500 dark:text-tertiary-400 p-2 hover:bg-tertiary-50 dark:hover:bg-tertiary-900/20 rounded-lg transition-colors"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                            >
-                                                <TrashIcon className="w-6 h-6" />
-                                            </motion.button>
-                                        </div>
-                                    </motion.td>
-                                </motion.tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap">
+                                    <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getRoleColor(employee.role)}`}>
+                                        {employee.role}
+                                    </span>
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
+                                    {employee.location}
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap">
+                                    <span className={`inline-flex px-4 py-2 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}>
+                                        {employee.status}
+                                    </span>
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
+                                    {new Date(employee.joinDate).toLocaleDateString()}
+                                </td>
+                                <td className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">
+                                    <div className="flex justify-end space-x-3">
+                                        <motion.button
+                                            className="text-primary-600 hover:text-primary-500 dark:text-primary-400 p-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <EyeIcon className="w-6 h-6" />
+                                        </motion.button>
+                                        <motion.button
+                                            className="text-secondary-600 hover:text-secondary-500 dark:text-secondary-400 p-2 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded-lg transition-colors"
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <PencilIcon className="w-6 h-6" />
+                                        </motion.button>
+                                        <motion.button
+                                            className="text-tertiary-600 hover:text-tertiary-500 dark:text-tertiary-400 p-2 hover:bg-tertiary-50 dark:hover:bg-tertiary-900/20 rounded-lg transition-colors"
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <TrashIcon className="w-6 h-6" />
+                                        </motion.button>
+                                    </div>
+                                </td>
+                            </motion.tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
-            {/* Pagination using reusable component */}
-            <div className="px-8 py-6 border-t border-white/10 dark:border-gray-700/30">
+            {/* Pagination with centered layout and separator */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-8 px-8 py-6 border-t border-white/10 dark:border-gray-700/30">
+                <EntriesPerPage
+                    value={itemsPerPage}
+                    onChange={setItemsPerPage}
+                    options={[5, 10, 15, 20, 25, 30]}
+                />
+
+                <div className="w-px h-8 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div> {/* Vertical separator */}
+
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

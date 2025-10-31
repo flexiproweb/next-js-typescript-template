@@ -106,7 +106,7 @@ export default function Pagination({
         <motion.button
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2.5 rounded-lg border-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="p-2.5 rounded-lg border-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-transparent dark:hover:bg-transparent hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           aria-label="Previous page"
           whileHover={currentPage > 1 ? { scale: 1.05 } : {}}
           whileTap={currentPage > 1 ? { scale: 0.95 } : {}}
@@ -158,7 +158,7 @@ export default function Pagination({
         <motion.button
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2.5 rounded-lg border-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="p-2.5 rounded-lg border-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-transaprent dark:hover:bg-transparent hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           aria-label="Next page"
           whileHover={currentPage < totalPages ? { scale: 1.05 } : {}}
           whileTap={currentPage < totalPages ? { scale: 0.95 } : {}}

@@ -22,13 +22,19 @@ export default function EntriesPerPage({
   className = ""
 }: EntriesPerPageProps) {
   
-  // Detect dark mode
+  // Detect dark mode and client-side mounting
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // Mark component as mounted (client-side)
+    setIsMounted(true);
+    
     // Check if dark mode is active
     const checkDarkMode = () => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
+      if (typeof window !== 'undefined') {
+        setIsDarkMode(document.documentElement.classList.contains('dark'));
+      }
     };
 
     // Initial check
@@ -36,10 +42,12 @@ export default function EntriesPerPage({
 
     // Create observer to watch for theme changes
     const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
+    if (typeof window !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
 
     return () => observer.disconnect();
   }, []);
@@ -60,32 +68,27 @@ export default function EntriesPerPage({
     }
   };
 
-  // Dynamic styles based on theme - Updated with glass effect
+  // Updated styles with NO focus effects
   const getCustomStyles = () => ({
     control: (provided: any, state: any) => ({
       ...provided,
-      minHeight: '40px',
-      height: '40px',
-      borderColor: state.isFocused 
-        ? '#3b82f6' 
-        : isDarkMode 
-          ? '#4b5563' 
-          : '#d1d5db',
-      borderRadius: '12px',
-      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : 'rgba(255, 255, 255, 0.5)',
-      backdropFilter: 'blur(4px)',
-      boxShadow: state.isFocused 
-        ? '0 0 0 2px rgba(59, 130, 246, 0.5)' 
-        : 'none',
+      minHeight: '37px',
+      height: '37px',
+      borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+      borderRadius: '8px',
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : 'white',
+      backdropFilter: isDarkMode ? 'blur(4px)' : 'none',
+      boxShadow: 'none',
+      outline: 'none',
       '&:hover': {
-        borderColor: isDarkMode ? '#6b7280' : '#9ca3af',
+        borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
       },
       fontSize: '14px',
       fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
     }),
     valueContainer: (provided: any) => ({
       ...provided,
-      height: '38px',
+      height: '35px',
       padding: '0 8px'
     }),
     input: (provided: any) => ({
@@ -99,19 +102,19 @@ export default function EntriesPerPage({
     }),
     indicatorsContainer: (provided: any) => ({
       ...provided,
-      height: '38px',
+      height: '35px',
       color: isDarkMode ? '#9ca3af' : '#6b7280'
     }),
     dropdownIndicator: (provided: any) => ({
       ...provided,
       color: isDarkMode ? '#9ca3af' : '#6b7280',
       '&:hover': {
-        color: isDarkMode ? '#d1d5db' : '#374151'
+        color: isDarkMode ? '#9ca3af' : '#6b7280'
       }
     }),
     placeholder: (provided: any) => ({
       ...provided,
-      color: isDarkMode ? '#9ca3af' : '#6b7280',
+      color: isDarkMode ? '#6b7280' : '#6b7280',
       fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
     }),
     singleValue: (provided: any) => ({
@@ -121,13 +124,11 @@ export default function EntriesPerPage({
     }),
     menu: (provided: any) => ({
       ...provided,
-      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(8px)',
+      backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'white',
+      backdropFilter: isDarkMode ? 'blur(8px)' : 'none',
       border: isDarkMode ? '1px solid #4b5563' : '1px solid #d1d5db',
-      borderRadius: '12px',
-      boxShadow: isDarkMode 
-        ? '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25)'
-        : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      borderRadius: '8px',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       zIndex: 9999,
       fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
     }),
@@ -139,12 +140,12 @@ export default function EntriesPerPage({
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isSelected 
-        ? (isDarkMode ? '#374151' : '#3b82f6')
+        ? '#3b82f6'
         : state.isFocused 
-          ? (isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(243, 244, 246, 0.8)')
+          ? (isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f3f4f6')
           : 'transparent',
       color: state.isSelected 
-        ? (isDarkMode ? '#e5e7eb' : 'white')
+        ? 'white'
         : isDarkMode 
           ? '#f9fafb' 
           : '#111827',
@@ -156,13 +157,18 @@ export default function EntriesPerPage({
       padding: '8px 12px',
       '&:active': {
         backgroundColor: state.isSelected 
-          ? (isDarkMode ? '#374151' : '#3b82f6')
+          ? '#3b82f6'
           : isDarkMode 
             ? 'rgba(75, 85, 99, 0.5)' 
-            : 'rgba(229, 231, 235, 0.8)'
+            : '#e5e7eb'
       }
     })
   });
+
+  // Don't render until component is mounted on client
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className={className}>
@@ -174,17 +180,17 @@ export default function EntriesPerPage({
         styles={getCustomStyles()}
         className="react-select-container min-w-[140px]"
         classNamePrefix="react-select"
-        menuPortalTarget={document.body}
+        menuPortalTarget={typeof window !== 'undefined' ? document.body : undefined}
         menuPosition="fixed"
         theme={(theme) => ({
           ...theme,
           colors: {
             ...theme.colors,
-            primary: '#3b82f6',
-            primary75: '#60a5fa',
-            primary50: '#93c5fd',
-            primary25: '#dbeafe',
-            neutral0: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : 'rgba(255, 255, 255, 0.5)',
+            primary: isDarkMode ? '#4b5563' : '#d1d5db',
+            primary75: isDarkMode ? '#4b5563' : '#d1d5db',
+            primary50: isDarkMode ? '#4b5563' : '#d1d5db',
+            primary25: isDarkMode ? '#4b5563' : '#d1d5db',
+            neutral0: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : 'white',
             neutral10: isDarkMode ? '#374151' : '#f3f4f6',
             neutral20: isDarkMode ? '#4b5563' : '#e5e7eb',
             neutral30: isDarkMode ? '#6b7280' : '#d1d5db',
