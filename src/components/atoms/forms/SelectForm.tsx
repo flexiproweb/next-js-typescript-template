@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { SearchableDropdown, SearchableDropdownOption } from '@/components/atoms/SearchableDropDown';
+import React from "react";
+
 export interface Option {
   value: string;
   label: string;
@@ -19,12 +19,7 @@ export interface SelectFormProps {
   isClearable?: boolean;
   isDisabled?: boolean;
   className?: string;
-  enableAutocomplete?: boolean;
 }
-
-// Helper type for your form data
-export type SelectOptionArray = Option[];
-
 
 export function SelectForm({
   label,
@@ -34,52 +29,78 @@ export function SelectForm({
   onChange,
   error,
   required = false,
-  placeholder = 'Select...',
+  placeholder = "Select...",
   isClearable = false,
   isDisabled = false,
-  className = '',
-  enableAutocomplete = true
+  className = "",
 }: SelectFormProps) {
-  // Convert Option[] to SearchableDropdownOption[] with proper typing
-  const searchableOptions: SearchableDropdownOption[] = React.useMemo(() => 
-    options.map(option => ({
-      value: option.value,
-      label: option.label,
-      type: 'option' as const
-    })), [options]
-  );
-
-  // Handle change to maintain compatibility with existing form systems
-  const handleChange = React.useCallback((newValue: string, selectedOption?: SearchableDropdownOption) => {
-    const target = { value: newValue, name };
-    const syntheticEvent = {
-      target,
-      currentTarget: target,
-      type: 'change',
-      preventDefault: () => {},
-      stopPropagation: () => {}
-    } as React.ChangeEvent<HTMLSelectElement>;
-    
-    onChange(syntheticEvent);
-  }, [name, onChange]);
-
   return (
-    <SearchableDropdown
-      mode="select"
-      name={name}
-      label={label}
-      options={searchableOptions}
-      value={value}
-      onChange={handleChange}
-      placeholder={placeholder}
-      error={error}
-      required={required}
-      isClearable={isClearable}
-      disabled={isDisabled}
-      className={className}
-      showCategoryIcons={false}
-      maxHeight={200}
-      enableAutocomplete={enableAutocomplete}
-    />
+    <div className={`flex flex-col space-y-1 ${className}`}>
+      {label && (
+        <label
+          htmlFor={name}
+          className="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+
+      <div className="relative">
+        {/* Native select element */}
+        <select
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          disabled={isDisabled}
+          required={required}
+          className={`block w-full appearance-none rounded-lg border px-3 py-2 text-sm
+            ${error
+              ? "border-red-500 focus:ring-red-500"
+              : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"}
+            bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all outline-none
+            disabled:opacity-50 disabled:cursor-not-allowed
+          `}
+        >
+          {/* Placeholder option */}
+          {placeholder && (
+            <option value="" disabled hidden>
+              {placeholder}
+            </option>
+          )}
+
+          {/* Optional clearable option */}
+          {isClearable && (
+            <option value="">— None —</option>
+          )}
+
+          {/* Render all available options */}
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Dropdown arrow icon */}
+        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+    </div>
   );
 }

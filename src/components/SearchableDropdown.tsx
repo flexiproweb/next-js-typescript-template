@@ -365,7 +365,7 @@ export default function SearchableDropdown({
 
   // Get category icon
   const getCategoryIcon = useCallback((category?: string) => {
-    if (!showCategoryIcons || !category) return isSearchMode ? '🔍' : '';
+    // if (!showCategoryIcons || !category) return isSearchMode ? '🔍' : '';
     
     switch (category) {
       case 'Electronics': return '📱';
