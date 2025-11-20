@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { SearchableDropdown, SearchableDropdownOption } from '@/components/atoms/SearchableDropDown';
-import suggestionData from "../../../..//suggestions.json";
+import SearchableDropdown from '../SearchableDropDown/SearchableDropdown';
+import suggestionData from "../../../../suggestions.json";
 // import type { SearchHeaderProps, Suggestion } from './SearchHeader.types';
 export interface SearchHeaderProps {
   placeholder?: string;
@@ -37,18 +37,19 @@ export function SearchHeader({
   autoFocus = false
 }: SearchHeaderProps) {
   // Convert Suggestion[] to SearchableDropdownOption[]
-  const searchableOptions: SearchableDropdownOption[] = React.useMemo(() =>
-    dummySuggestions.map(suggestion => ({
-      id: suggestion.id,
-      value: suggestion.name,
-      label: suggestion.name,
-      category: suggestion.category,
-      type: suggestion.type as 'product' | 'query',
-    })), []);
 
-  const handleChange = React.useCallback((newValue: string, selectedOption?: SearchableDropdownOption) => {
+
+const handleChange = React.useCallback((
+  newValue: string | string[],
+ 
+) => {
+  if (typeof newValue === "string") {
     onChange?.(newValue);
-  }, [onChange]);
+  } else {
+    onChange?.(newValue.join(", "));
+  }
+}, [onChange]);
+
 
   const handleSearch = React.useCallback((query: string) => {
     onSearch?.(query);
@@ -65,19 +66,23 @@ export function SearchHeader({
   return (
     <>
       {/* Desktop Search */}
-      <div className={`hidden md:flex flex-1 max-w-lg mx-4 ${className} relative`}>
+      <div className={`hidden md:flex flex-1 max-w-2xl mx-8 ${className} relative`}>
         <SearchableDropdown
           mode="search"
-          options={searchableOptions}
+          dataMode="async"
+          apiUrl="https://dummyjson.com/products/search"
+          apiMethod="GET"
+          debounceMs={500}
+          minCharsForSearch={1}
           value={value}
           onChange={handleChange}
-          onSearch={handleSearch}
-          placeholder={placeholder}
-          enableAutocomplete={true}
-          showCategoryIcons={true}
-          maxSuggestions={15}
-          maxHeight={300}
-          className="w-full min-w-[280px]"
+          placeholder="Search products..."
+          label="Product Search (Async)"
+          maxSuggestions={10}
+          objectKey="products"
+          valueKey="id"
+          labelKey="title"
+          className="w-full min-w-[500px] max-w-[700px]" 
         />
       </div>
 
@@ -94,17 +99,19 @@ export function SearchHeader({
             <div className="flex-grow min-w-[280px]">
               <SearchableDropdown
                 mode="search"
-                options={searchableOptions}
+                dataMode="async"
+                apiUrl="https://dummyjson.com/products/search"
+                apiMethod="GET"
+                debounceMs={500}
+                minCharsForSearch={1}
                 value={value}
                 onChange={handleChange}
-                onSearch={handleSearch}
-                placeholder={placeholder}
-                enableAutocomplete={true}
-                showCategoryIcons={true}
-                maxSuggestions={15}
-                maxHeight={300}
-                autoFocus={autoFocus}
-                className="w-full"
+                placeholder="Search products..."
+                label="Product Search (Async)"
+                maxSuggestions={10}
+                objectKey="products"
+                valueKey="id"
+                labelKey="title"
               />
             </div>
           </div>

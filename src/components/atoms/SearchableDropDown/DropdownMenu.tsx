@@ -1,3 +1,4 @@
+// components/DropdownMenu.tsx
 import React from 'react';
 
 interface DropdownMenuProps<T> {
@@ -13,11 +14,11 @@ interface DropdownMenuProps<T> {
   dropdownRef: React.RefObject<HTMLDivElement>;
   className?: string;
   maxHeight?: number;
-  selectedValue?: string;
+  selectedValue?: string | string[];
   isDarkMode?: boolean;
 }
 
-export default function DropdownMenu<T>({
+export default function DropdownMenu<T extends { value: string }>({
   isOpen,
   items,
   highlightedIndex,
@@ -34,6 +35,19 @@ export default function DropdownMenu<T>({
   isDarkMode = false
 }: DropdownMenuProps<T>) {
   if (!isOpen) return null;
+
+  // Helper function to check if an item is selected
+  const isItemSelected = (item: T): boolean => {
+    if (!selectedValue) return false;
+    
+    if (Array.isArray(selectedValue)) {
+      // Multi-select mode
+      return selectedValue.includes(item.value);
+    } else {
+      // Single select mode
+      return selectedValue === item.value;
+    }
+  };
 
   return (
     <div
@@ -54,12 +68,17 @@ export default function DropdownMenu<T>({
           <div className="py-1">
             {items.map((item, index) => (
               <div
-                key={index}
+                key={`${item.value}-${index}`}
                 onClick={() => onItemSelect(item)}
                 onMouseEnter={() => onItemHover(index)}
                 className="cursor-pointer"
               >
-                {renderItem(item, index, index === highlightedIndex)}
+                {renderItem(
+                  item, 
+                  index, 
+                  index === highlightedIndex, 
+                  isItemSelected(item)
+                )}
               </div>
             ))}
           </div>
