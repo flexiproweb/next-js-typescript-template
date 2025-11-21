@@ -35,6 +35,9 @@ export function useDropdown<T>({
 
   // Handle clicks outside to close dropdown
   useEffect(() => {
+    // Only add listener if dropdown is open
+    if (!isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -42,19 +45,26 @@ export function useDropdown<T>({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    // Use a small delay to prevent immediate triggering
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]); // Only depend on isOpen
 
   const handleInputChange = useCallback((value: string) => {
     setInputValue(value);
     hasUserInteractedRef.current = true;
     
     // Open dropdown if user is typing and has content
-    if (value.trim() !== '') {
+    if (value.trim() !== '' && !isOpen) {
       setIsOpen(true);
     }
-  }, []);
+  }, [isOpen]);
 
   const handleItemSelect = useCallback((item: T) => {
     onSelect(item);
