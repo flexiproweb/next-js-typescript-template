@@ -24,17 +24,17 @@ export interface Suggestion {
 }
 
 
-const dummySuggestions: Suggestion[] = suggestionData as Suggestion[];
+// const dummySuggestions: Suggestion[] = suggestionData as Suggestion[];
 
 export function SearchHeader({
-  placeholder = "Search...",
+  // placeholder = "Search...",
   value = "",
   onChange,
   onSearch,
   className = "",
   showMobileSearch = false,
   onToggleMobileSearch,
-  autoFocus = false
+  // autoFocus = false
 }: SearchHeaderProps) {
   // Convert Suggestion[] to SearchableDropdownOption[]
 
@@ -51,9 +51,9 @@ const handleChange = React.useCallback((
 }, [onChange]);
 
 
-  const handleSearch = React.useCallback((query: string) => {
-    onSearch?.(query);
-  }, [onSearch]);
+  // const handleSearch = React.useCallback((query: string) => {
+  //   onSearch?.(query);
+  // }, [onSearch]);
 
   // Mobile search toggle handler
   const handleMobileToggle = React.useCallback((show: boolean) => {

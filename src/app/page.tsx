@@ -121,7 +121,7 @@ export default function Home() {
               >
                 <span className="inline-flex items-center px-8 py-3 rounded-full bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 text-primary-700 dark:text-primary-300 text-sm font-semibold border border-primary-200 dark:border-primary-700/50 shadow-lg">
                   <SparklesIcon className="w-5 h-5 mr-2" />
-                  Oracle's Preferred Partner
+                  {"Oracle's Preferred Partner"}
                 </span>
               </motion.div>
 
@@ -158,7 +158,7 @@ export default function Home() {
                 className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-4xl mx-auto font-tertiary"
               >
                 Intellinum is the premier choice for your Oracle mobility and logistics implementation needs.
-                As Oracle's preferred partner, our team brings unparalleled expertise with a global presence
+                As Oracle&apos;s preferred partner, our team brings unparalleled expertise with a global presence
                 spanning Dallas, Texas, Indonesia, India, and Dubai.
               </motion.p>
 
