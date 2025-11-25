@@ -1,0 +1,20 @@
+# Sidebar Component - Quick Reference
+
+## Usage
+```jsx
+<Sidebar isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} 
+         isCollapsed={isDesktopCollapsed} onToggleCollapse={() => setIsDesktopCollapsed(!isDesktopCollapsed)} />
+```
+
+## Key Features
+- **Drag & Drop**: Double-click items to activate, then drag to reorder.
+-  Parents reorder among parents, children only within same parent.
+- **Responsive**: Mobile drawer (< 1024px) + collapsible desktop sidebar with tooltips on hover.
+- **Custom Hooks**: `useNavigation(initialNav)` manages state/reordering,
+ `useActiveDrag()` handles visual drag states.
+- **Add Items**: Edit `initialNav` array with `{name, href, icon, hasSubmenu?, subItems?}` structure.
+- **Dependencies**: Requires `@dnd-kit/core`, `@dnd-kit/sortable`, `@heroicons/react`.
+
+## Component Structure
+
+`Sidebar` → `SidebarContent` → `NavigationList` → `ParentItem`/`ChildItem` (both wrap `SortableItem`)
